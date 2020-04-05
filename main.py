@@ -16,15 +16,20 @@ platforms = []
 def collision(player, platform):
 	if (player.x - player.width <= platform.x + platform.width and
 		player.x + player.width >= platform.x - platform.width):
-		p = True
-		s = (platform.y - platform.height) - (player.y + player.height)
-		if s <= 0 and platform.solid:
-			col = True
-		else col = False
+		s = (platform.y - platform.height) - (player.y + player.height + 1)
+		if s >= 0:
+			platformUnderThePlayer = True
+			if s == 0 and platform.solid:
+				col = True
+			else:
+				col = False
+		else:
+			platformUnderThePlayer = False
+			col = False
 	else:
-		p, s, col = False, 0, False
+		platformUnderThePlayer, s, col = False, 0, False
 
-	return col, p, s
+	return col, platformUnderThePlayer, s
 
 def events():
 	for event in p.event.get():
@@ -46,16 +51,17 @@ def events():
 def play():
 	col = False
 	s = Height
-	p
+	platformUnderThePlayer = False
 	for i, platform in enumerate(platforms):
-		c = collision(pl, p)
+		c = collision(pl, platform)
 		if c[0]:
 			col = True
 		elif c[1] and platform.solid and c[2] < s:
+			platformUnderThePlayer = True
 			s = c[2]
-		p.draw()
+		platform.draw()
 
-	pl.draw(col,s)
+	pl.draw(col, platformUnderThePlayer, s)
 
 def quit():
 	p.quit()
@@ -65,8 +71,10 @@ def quit():
 x = Width // 2
 y = Height - 100
 color = (253,150,34)
-pl = Player(sc, x, 60)
-platforms.append(Platform(sc, x, y-50, color, True, x))
+pl = Player(sc, x, 60, Height, Width)
+platforms.append(Platform(sc, x, y-20, color, True, x//2))
+platforms.append(Platform(sc, x//4, y-20, (150,150,34), False, x//4))
+platforms.append(Platform(sc, x, Height, color, True, x))
 
 while True:
 	sc.fill((100, 50, 50))
