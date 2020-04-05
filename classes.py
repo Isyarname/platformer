@@ -11,13 +11,13 @@ class Player:
 		self.scWidth = width
 		self.surface = surf
 		self.color = (30, 100, 200)
-		self.vyMax = -15
-		self.g = 1
+		self.g = 2
+		self.vyMax = self.g * 8
 		self.motion = 0
 		self.jump = False
 		self.width = self.height = 10
 
-	def movement(self, collision, platformUnderThePlayer, s):
+	def movement(self, platformUnderThePlayer, s, pType):
 		if self.motion == p.K_RIGHT:
 			self.x += self.vx
 		elif self.motion == p.K_LEFT:
@@ -26,32 +26,53 @@ class Player:
 			self.x = 0
 		elif self.x < 0:
 			self.x = self.scWidth
-		if collision:
-			if self.jump == True:
-				self.vy = self.vyMax
-			else:
-				self.vy = 0
-		else:
-			if self.vy < - self.vyMax :
-				self.vy += self.g
-			if platformUnderThePlayer and s < self.vy:
-				self.vy = s
-		self.y += self.vy//1
+
+		if s != 0: #гравитация
+			self.vy += self.g
+		
+		if platformUnderThePlayer:
+			if pType == "solid":
+				if s < self.vy:
+					self.vy = s
+				if s == 0:
+					if self.jump:
+						self.vy -= self.vyMax
+					else:
+						self.vy = 0
+			elif pType == "trampoline":
+				if s < self.vy or s == 0:
+					print("vy =", self.vy)
+					if self.vy > 8:
+						self.vy = -(self.vy * 3 // 4)
+					elif self.vy > 3:
+						self.vy = -(self.vy - 3)
+					else:
+						self.vy = 0
+						self.y += s
+					print("vy2 =", self.vy)
+					if self.jump:
+						print("jump")
+						self.vy -= self.vyMax
+				if s < self.vy and s != 0:
+					self.y += (s * 2 - self.vy)
+					print("y =", self.y)
+					
+		self.y += self.vy
 			
-	def draw(self, collision, platformUnderThePlayer, s):
-		self.movement(collision, platformUnderThePlayer, s)
+	def draw(self, platformUnderThePlayer, s, pType):
+		self.movement(platformUnderThePlayer, s, pType)
 		form = [(self.x-self.width, self.y-self.height), (self.x-self.width, self.y+self.height), 
 		(self.x+self.width, self.y+self.height), (self.x+self.width, self.y-self.height)]
 		p.draw.polygon(self.surface, self.color, form)
 
 
 class Platform:
-	def __init__(self, surface, x, y, color, sol, width):
+	def __init__(self, surface, x, y, color, type, width):
 		self.x = x
 		self.y = y
 		self.surface = surface
 		self.color = color
-		self.solid = sol
+		self.type = type
 		self.width = width
 		self.height = 2
 

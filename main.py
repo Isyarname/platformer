@@ -13,23 +13,18 @@ Height = 500
 sc = p.display.set_mode((Width, Height))
 platforms = []
 
-def collision(player, platform):
+def distanceToPlatform(player, platform):
 	if (player.x - player.width <= platform.x + platform.width and
 		player.x + player.width >= platform.x - platform.width):
 		s = (platform.y - platform.height) - (player.y + player.height + 1)
 		if s >= 0:
 			platformUnderThePlayer = True
-			if s == 0 and platform.solid:
-				col = True
-			else:
-				col = False
 		else:
 			platformUnderThePlayer = False
-			col = False
 	else:
-		platformUnderThePlayer, s, col = False, 0, False
+		platformUnderThePlayer, s = False, False
 
-	return col, platformUnderThePlayer, s
+	return platformUnderThePlayer, s
 
 def events():
 	for event in p.event.get():
@@ -49,19 +44,18 @@ def events():
 				pl.motion = 0
 
 def play():
-	col = False
 	s = Height
 	platformUnderThePlayer = False
+	pType = "ghost"
 	for i, platform in enumerate(platforms):
-		c = collision(pl, platform)
-		if c[0]:
-			col = True
-		elif c[1] and platform.solid and c[2] < s:
+		d = distanceToPlatform(pl, platform)
+		if d[0] and platform.type != "ghost" and d[1] < s:
 			platformUnderThePlayer = True
-			s = c[2]
+			pType = platform.type
+			s = d[1]
 		platform.draw()
 
-	pl.draw(col, platformUnderThePlayer, s)
+	pl.draw(platformUnderThePlayer, s, pType)
 
 def quit():
 	p.quit()
@@ -72,9 +66,11 @@ x = Width // 2
 y = Height - 100
 color = (253,150,34)
 pl = Player(sc, x, 60, Height, Width)
-platforms.append(Platform(sc, x, y-20, color, True, x//2))
-platforms.append(Platform(sc, x//4, y-20, (150,150,34), False, x//4))
-platforms.append(Platform(sc, x, Height, color, True, x))
+platforms.append(Platform(sc, x, y-20, color, "solid", x//2))
+platforms.append(Platform(sc, x//4, y-20, (150,150,34), "ghost", x//4))
+platforms.append(Platform(sc, Width - x//4, y-20, (255,100,0), "trampoline", x//4))
+platforms.append(Platform(sc, Width*3//4, Height, color, "solid", x//2))
+platforms.append(Platform(sc, Width//4, Height, (255,100,0), "trampoline", x//2))
 
 while True:
 	sc.fill((100, 50, 50))
