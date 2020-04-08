@@ -11,13 +11,13 @@ class Player:
 		self.scWidth = width
 		self.surface = surf
 		self.color = (30, 100, 200)
-		self.g = 2
-		self.vyMax = self.g * 8
+		self.g = 0.5
+		self.vyMax = self.g * 16
 		self.motion = 0
 		self.jump = False
 		self.width = self.height = 10
 
-	def movement(self, platformUnderThePlayer, s, pType):
+	def movement(self, platformUnderThePlayer, s, pType, platformAboveThePlayer, s2):
 		if self.motion == p.K_RIGHT:
 			self.x += self.vx
 		elif self.motion == p.K_LEFT:
@@ -29,6 +29,12 @@ class Player:
 
 		if s != 0: #гравитация
 			self.vy += self.g
+
+		if platformAboveThePlayer:
+			if s2 <= 0 and self.vy < 0:
+				self.vy = 0
+			elif s > 0 and s2 < -self.vy:
+				self.vy = s2
 		
 		if platformUnderThePlayer:
 			if pType == "solid":
@@ -43,7 +49,7 @@ class Player:
 				if s < self.vy or s == 0:
 					print("vy =", self.vy)
 					if self.vy > 8:
-						self.vy = -(self.vy * 3 // 4)
+						self.vy = -(self.vy * 3 / 4)
 					elif self.vy > 3:
 						self.vy = -(self.vy - 3)
 					else:
@@ -59,19 +65,26 @@ class Player:
 					
 		self.y += self.vy
 			
-	def draw(self, platformUnderThePlayer, s, pType):
-		self.movement(platformUnderThePlayer, s, pType)
-		form = [(self.x-self.width, self.y-self.height), (self.x-self.width, self.y+self.height), 
-		(self.x+self.width, self.y+self.height), (self.x+self.width, self.y-self.height)]
+	def draw(self, platformUnderThePlayer, s, pType, platformAboveThePlayer, s2):
+		self.movement(platformUnderThePlayer, s, pType, platformAboveThePlayer, s2)
+		x = self.x // 1
+		y = self.y // 1
+		form = [(x-self.width, y-self.height), (x-self.width, y+self.height), 
+		(x+self.width, y+self.height), (x+self.width, y-self.height)]
 		p.draw.polygon(self.surface, self.color, form)
 
 
 class Platform:
-	def __init__(self, surface, x, y, color, type, width):
+	def __init__(self, surface, x, y, type, width):
 		self.x = x
 		self.y = y
 		self.surface = surface
-		self.color = color
+		if type == "solid":
+			self.color = (253,150,34)
+		elif type == "ghost":
+			self.color = (165,165,100)
+		elif type == "trampoline":
+			self.color = (255,50,0)
 		self.type = type
 		self.width = width
 		self.height = 2
