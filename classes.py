@@ -67,8 +67,8 @@ class Player:
 			
 	def draw(self, platformUnderThePlayer, s, pType, platformAboveThePlayer, s2):
 		self.movement(platformUnderThePlayer, s, pType, platformAboveThePlayer, s2)
-		x = self.x // 1
-		y = self.y // 1
+		x = round(self.x)
+		y = round(self.y)
 		form = [(x-self.width, y-self.height), (x-self.width, y+self.height), 
 		(x+self.width, y+self.height), (x+self.width, y-self.height)]
 		p.draw.polygon(self.surface, self.color, form)
