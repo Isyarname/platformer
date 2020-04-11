@@ -34,7 +34,7 @@ class Player:
 			if s2 <= 0 and self.vy < 0:
 				self.vy = 0
 			elif s > 0 and s2 < -self.vy:
-				self.vy = s2
+				self.vy = -s2
 		
 		if platformUnderThePlayer:
 			if pType == "solid":
