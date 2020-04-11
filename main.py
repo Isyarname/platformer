@@ -1,8 +1,6 @@
 import pygame as p
 import sys
-from math import *
 from classes import *
-#from screeninfo import get_monitors
 
 p.mixer.init()
 clock = p.time.Clock()
