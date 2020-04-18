@@ -61,9 +61,6 @@ class Player:
 						self.vy -= self.vyMax
 				if s < self.vy and s != 0:
 					self.y += (s * 2 - self.vy)
-			elif pType == "spikes":
-				if s == 0:
-					self.hp = 0
 					
 		self.y += self.vy
 			

@@ -16,10 +16,10 @@ def distanceToPlatform(player, platform):
 		player.x + player.width >= platform.x - platform.width and platform.type != "ghost"):
 		s = (platform.y - platform.height) - (player.y + player.height + 1)
 		if platform.type == "spikes":
-			if (object2.y - object2.depth < object1.y + object1.depth and
-		object2.y + object2.depth > object1.y - object2.depth):
+			if (player.y - player.height < platform.y + platform.height and
+				player.y + player.height > platform.y - platform.height):
 				pl.hp = 0
-		elif s >= 0:
+		if s >= 0:
 			platformUnderThePlayer = True
 			platformAboveThePlayer, s2 = False, False
 		else:
@@ -35,14 +35,6 @@ def distanceToPlatform(player, platform):
 
 	return platformUnderThePlayer, s, platformAboveThePlayer, s2
 
-def collision(object1, object2): #enemy, bullet/player
-	if (object2.y - object2.depth < object1.y + object1.depth and
-		object2.y + object2.depth > object1.y - object2.depth and 
-		object1.x - object1.depth < object2.x + object2.depth and
-		object1.x + object1.depth > object2.x - object2.depth):
-		return True
-	else:
-		return False
 
 def events():
 	for event in p.event.get():
