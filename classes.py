@@ -1,5 +1,7 @@
 import pygame as p
 
+font = "pixelFont.otf"
+textColor = (0,0,0)
 
 class Player:
 	def __init__(self, surf, x, y, height, width):
@@ -16,6 +18,7 @@ class Player:
 		self.motion = 0
 		self.jump = False
 		self.width = self.height = 10
+		self.hp = 1
 
 	def movement(self, platformUnderThePlayer, s, pType, platformAboveThePlayer, s2):
 		if self.motion == p.K_RIGHT:
@@ -37,7 +40,7 @@ class Player:
 				self.vy = -s2
 		
 		if platformUnderThePlayer:
-			if pType == "solid":
+			if pType == ("solid" or "spikes"):
 				if s < self.vy:
 					self.vy = s
 				if s == 0:
@@ -47,7 +50,6 @@ class Player:
 						self.vy = 0
 			elif pType == "trampoline":
 				if s < self.vy or s == 0:
-					print("vy =", self.vy)
 					if self.vy > 8:
 						self.vy = -(self.vy * 3 / 4)
 					elif self.vy > 3:
@@ -55,18 +57,19 @@ class Player:
 					else:
 						self.vy = 0
 						self.y += s
-					print("vy2 =", self.vy)
 					if self.jump:
-						print("jump")
 						self.vy -= self.vyMax
 				if s < self.vy and s != 0:
 					self.y += (s * 2 - self.vy)
-					print("y =", self.y)
+			elif pType == "spikes":
+				if s == 0:
+					self.hp = 0
 					
 		self.y += self.vy
 			
 	def draw(self, platformUnderThePlayer, s, pType, platformAboveThePlayer, s2):
 		self.movement(platformUnderThePlayer, s, pType, platformAboveThePlayer, s2)
+		print("hp =", self.hp)
 		x = round(self.x)
 		y = round(self.y)
 		form = [(x-self.width, y-self.height), (x-self.width, y+self.height), 
@@ -85,6 +88,8 @@ class Platform:
 			self.color = (165,165,100)
 		elif type == "trampoline":
 			self.color = (255,50,0)
+		elif type == "spikes":
+			self.color = (40,41,35)
 		self.type = type
 		self.width = width
 		self.height = 2
@@ -93,4 +98,38 @@ class Platform:
 		form = [(self.x-self.width, self.y-self.height), (self.x-self.width, self.y+self.height), 
 		(self.x+self.width, self.y+self.height), (self.x+self.width, self.y-self.height)]
 		p.draw.polygon(self.surface, self.color, form)
+		if self.type == "spikes":
+			y = self.y - self.height
+			w = 4
+			h = 9
+			for x in range(self.x-self.width+w, self.x+self.width, w*2):
+				form = [(x-w, y), (x, y-h), (x+w, y)]
+				p.draw.polygon(self.surface, self.color, form)
 	
+
+class Button:
+	def __init__(self, x, y, surf, size, color):
+		self.pressure = False
+		self.surface = surf
+		self.color = color
+		self.textColor = textColor
+		self.size = size
+		self.f = p.font.Font(font, self.size)
+		self.x = x
+		self.y = y
+		self.h = size * 10 // 19 + 7
+		self.w = 10
+
+	def draw(self, txt, Width):
+		text = self.f.render(txt, 1, self.textColor)
+		self.w = len(txt) * self.size // 3 + 10
+		if self.x - self.w < 5:
+			self.x -= (self.x - self.w) - 5
+		elif self.x + self.w > Width - 5:
+			self.x -= (self.x + self.w) - (Width - 5)
+		place = text.get_rect(center=(self.x,self.y))
+		form = [(self.x - self.w, self.y - self.h), (self.x + self.w, self.y - self.h),
+		(self.x + self.w, self.y + self.h), (self.x - self.w, self.y + self.h)]
+		p.draw.polygon(self.surface, self.color, form)
+		self.surface.blit(text, place)
+

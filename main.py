@@ -15,7 +15,11 @@ def distanceToPlatform(player, platform):
 	if (player.x - player.width <= platform.x + platform.width and 
 		player.x + player.width >= platform.x - platform.width and platform.type != "ghost"):
 		s = (platform.y - platform.height) - (player.y + player.height + 1)
-		if s >= 0:
+		if platform.type == "spikes":
+			if (object2.y - object2.depth < object1.y + object1.depth and
+		object2.y + object2.depth > object1.y - object2.depth):
+				pl.hp = 0
+		elif s >= 0:
 			platformUnderThePlayer = True
 			platformAboveThePlayer, s2 = False, False
 		else:
@@ -30,6 +34,15 @@ def distanceToPlatform(player, platform):
 		platformAboveThePlayer, s2 = False, False
 
 	return platformUnderThePlayer, s, platformAboveThePlayer, s2
+
+def collision(object1, object2): #enemy, bullet/player
+	if (object2.y - object2.depth < object1.y + object1.depth and
+		object2.y + object2.depth > object1.y - object2.depth and 
+		object1.x - object1.depth < object2.x + object2.depth and
+		object1.x + object1.depth > object2.x - object2.depth):
+		return True
+	else:
+		return False
 
 def events():
 	for event in p.event.get():
@@ -69,6 +82,8 @@ def quit():
 	p.quit()
 	sys.exit()
 
+buttonColor = (140, 140, 140)
+eButton = Button(Width//2, Height//2, sc, Width//15, buttonColor) #конец
 
 x = Width // 2
 y = Height - 100
@@ -77,13 +92,17 @@ platforms.append(Platform(sc, x, 20, "solid", x))
 platforms.append(Platform(sc, x, y-20, "solid", x//2))
 platforms.append(Platform(sc, x//4, y-20, "ghost", x//4))
 platforms.append(Platform(sc, Width - x//4, y-20, "trampoline", x//4))
-platforms.append(Platform(sc, Width*3//4, Height, "solid", x//2))
+platforms.append(Platform(sc, Width*5//8, Height, "solid", x//4))
+platforms.append(Platform(sc, Width*7//8, Height, "spikes", x//4))
 platforms.append(Platform(sc, Width//4, Height, "trampoline", x//2))
 
 while True:
 	sc.fill((100, 50, 50))
 	events()
-	play()
+	if pl.hp <= 0:
+		eButton.draw("конец", Width)
+	else:
+		play()
 
 	clock.tick(120)
 
