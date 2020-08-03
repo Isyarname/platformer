@@ -14,12 +14,9 @@ platforms = []
 fileName = "data.json"
 buttonColor = (140, 140, 140)
 eButton = Button(Width//2, Height//2, sc, Width//15, buttonColor)	# конец
-
 x = Width // 2
-y = Height // 2														# Height - 100
+y = 300
 pl = Player(sc, x, 60, Height, Width)
-pfMotion = 0
-pf = 0
 
 def read():
 	with open(fileName, "r", encoding = "UTF-8") as file:
@@ -31,67 +28,94 @@ def write():
 
 def distanceToPlatform(platform):
 	if (pl.x - pl.width <= platform.x2 and 
-		pl.x + pl.width >= platform.x1 and platform.type != 2):
-		s = (platform.y1) - (pl.y + pl.height + 1)
+		pl.x + pl.width >= platform.x1):
+		sy1 = platform.y1 - (pl.y + pl.height) - 1
+		sy2 = pl.y - pl.height - platform.y2 - 1
 		if pl.y - pl.height <= platform.y2:
-			if pl.y + pl.height >= platform.y1 - 9 and platform.type == 4:
-				pl.hp = 0
-			elif pl.y + pl.height >= platform.y1 - 1 and platform.type == 5:
+			if sy1 < 9 and platform.type == 4:
+				end()
+			elif sy1 <= 0 and platform.type == 5:
 				nextLevel()
-		if s >= 0:
-			platformUnderThePlayer = True
-			platformAboveThePlayer, s2 = False, False
-		else:
-			platformUnderThePlayer = False
-			s2 = (pl.y - pl.height - 1) - (platform.y2)
-			if s2 >= 0:
-				platformAboveThePlayer = True
-			else:
-				platformAboveThePlayer = False
-	else:
-		platformUnderThePlayer, s = False, False
-		platformAboveThePlayer, s2 = False, False
+		if 0 <= sy1 < pl.Sy1:
+			pl.Sy1 = sy1
+			pl.pfType = platform.type
+		if 0 <= sy2 < pl.Sy2:
+			pl.Sy2 = sy2
+	if (pl.y - pl.height <= platform.y2 and 
+		pl.y + pl.height >= platform.y1):
+		sxl = pl.x - pl.width - platform.x2 - 1
+		if 0 <= sxl < pl.Sxl:
+			pl.Sxl = sxl
+		sxr = platform.x1 - (pl.x + pl.width) - 1
+		if 0 <= sxr < pl.Sxr:
+			pl.Sxr = sxr
 
-	return (platformUnderThePlayer, s, platformAboveThePlayer, s2)
+def mouseMotion(event):
+	pos = event.pos
+	x1, y1, x2, y2 = platforms[pl.pfIndex].getPoints()
+	if pl.pfMotion == 1:								# измененте платформы
+		if pos[0]-x1 < x2-pos[0]:
+			platforms[pl.pfIndex].x1 += event.rel[0]
+		else:
+			platforms[pl.pfIndex].x2 += event.rel[0]
+		if pos[1]-y1 < y2-pos[1]:
+			platforms[pl.pfIndex].y1 += event.rel[1]
+			if pl.standsOnThePlatform == pl.pfIndex and event.rel[1] < 0:
+				pl.y += event.rel[1]
+				pl.vy -= 2
+		else:
+			platforms[pl.pfIndex].y2 += event.rel[1]
+	elif pl.pfMotion == 2:								# передвижение платформы
+		platforms[pl.pfIndex].x1 += event.rel[0]
+		platforms[pl.pfIndex].y1 += event.rel[1]
+		platforms[pl.pfIndex].x2 += event.rel[0]
+		platforms[pl.pfIndex].y2 += event.rel[1]
+		if pl.standsOnThePlatform == pl.pfIndex and event.rel[1] < 0:
+			pl.y += event.rel[1]
+			pl.vy -= 2
+
+def editingWithTheKeyboard(event):
+	if event.key == p.K_t:
+		platforms[pl.pfIndex].type += 1
+		if platforms[pl.pfIndex].type > 5:
+			platforms[pl.pfIndex].type = 1
+		platforms[pl.pfIndex].colorSel()
+	elif event.key == p.K_d:
+		platforms.pop(pl.pfIndex)
+		pl.pfIndex -= 1
+		pl.pfMotion = 0
+	elif event.key == p.K_p:
+		savePoint()
+	elif event.key == p.K_l:
+		saveLevel()
+	elif event.key == p.K_r:
+		restart()
+		if pl.pause:
+			pl.pause = False
+	elif event.key == p.K_n:
+		nextLevel()
+	elif event.key == p.K_c:
+		pts = (x-20, y-20, x+20, y+20)
+		platforms.append(Platform(pts, sc))
 
 def events():
 	for event in p.event.get():
 		if event.type == p.MOUSEBUTTONDOWN:
-			pos = event.pos
-			for i, o in enumerate(platforms):
-				if (o.x1 <= pos[0] <= o.x2 and o.y1 <= pos[1] <= o.y2):
-					pl.pfIndex = i
-					if event.button == 1:
-						pl.pfMotion = 1
-					elif event.button == 3:
-						pl.pfMotion = 2
+			if pl.editing:
+				pos = event.pos
+				for i, o in enumerate(platforms):
+					if (o.x1 <= pos[0] <= o.x2 and o.y1 <= pos[1] <= o.y2):
+						pl.pfIndex = i
+						if event.button == 1:
+							pl.pfMotion = 1
+						elif event.button == 3:
+							pl.pfMotion = 2
 
 		elif event.type == p.MOUSEBUTTONUP:
 			pl.pfMotion = 0
 
-		elif event.type == p.MOUSEMOTION:
-			pos = event.pos
-			x1, y1, x2, y2 = platforms[pl.pfIndex].getPoints()
-			if pl.pfMotion == 1:							# измененте платформы
-				if pos[0]-x1 < x2-pos[0]:
-					platforms[pl.pfIndex].x1 += event.rel[0]
-				else:
-					platforms[pl.pfIndex].x2 += event.rel[0]
-				if pos[1]-y1 < y2-pos[1]:
-					platforms[pl.pfIndex].y1 += event.rel[1]
-					if pl.standsOnThePlatform == pl.pfIndex and event.rel[1] < 0:
-						pl.y += event.rel[1]
-						pl.vy -= 2
-				else:
-					platforms[pl.pfIndex].y2 += event.rel[1]
-			elif pl.pfMotion == 2:							# передвижение платформы
-				platforms[pl.pfIndex].x1 += event.rel[0]
-				platforms[pl.pfIndex].y1 += event.rel[1]
-				platforms[pl.pfIndex].x2 += event.rel[0]
-				platforms[pl.pfIndex].y2 += event.rel[1]
-				if pl.standsOnThePlatform != 0 and event.rel[1] < 0:
-					pl.y += event.rel[1]
-					pl.vy -= 2
+		elif event.type == p.MOUSEMOTION and pl.editing:
+			mouseMotion(event)
 
 		if event.type == p.QUIT:
 			_quit()
@@ -103,26 +127,8 @@ def events():
 				pl.motion = event.key
 			elif event.key == p.K_SPACE:
 				pl.jump = True
-			elif event.key == p.K_t:
-				platforms[pl.pfIndex].type += 1
-				if platforms[pl.pfIndex].type > 5:
-					platforms[pl.pfIndex].type = 1
-				platforms[pl.pfIndex].colorSel()
-			elif event.key == p.K_d:
-				platforms.pop(pl.pfIndex)
-				pl.pfIndex -= 1
-				pl.pfMotion = 0
-			elif event.key == p.K_p:
-				savePoint()
-			elif event.key == p.K_l:
-				saveLevel()
-			elif event.key == p.K_r:
-				restart()
-			elif event.key == p.K_n:
-				nextLevel()
-			elif event.key == p.K_c:
-				pts = (x-20, y-20, x+20, y+20)
-				platforms.append(Platform(pts, sc))
+			elif pl.editing:
+				editingWithTheKeyboard(event)
 
 		elif event.type == p.KEYUP:
 			if event.key == p.K_SPACE:
@@ -131,21 +137,22 @@ def events():
 				pl.motion = 0
 
 def play():
-	s, pl.platformUnder = Height, False
-	s2, pl.platformAbove = Height, False
-	pfType = 0
+	pl.Sxr = 9999
+	pl.Sxl = 9999
+	pl.Sy1 = 9999
+	pl.Sy2 = 9999
+	pl.pfType = 0
 	for i, platform in enumerate(platforms):
-		d = distanceToPlatform(platform)
-		if d[0] and d[1] < s:
-			pl.platformUnder = True
-			pfType = platform.type
-			s = d[1]
-		elif d[2] and d[3] < s2:
-			pl.platformAbove = True
-			s2 = d[3]
+		if platform.type != 2 and not pl.pause:
+			distanceToPlatform(platform)
 		platform.draw()
+	pl.draw()
+	if pl.hp <= 0:
+		eButton.draw("конец", Width)
 
-	pl.draw(s, pfType, s2)
+def end():
+	pl.hp = 0
+	pl.pause = True
 
 def saveLevel(ls=[]):
 	lvl = str(pl.level)
@@ -155,7 +162,7 @@ def saveLevel(ls=[]):
 	if lvl in data.keys():
 		data[lvl]["platforms"] = ls
 	else:
-		data.update({lvl:{"player":{"point":[x,300]},"platforms":ls}})
+		data.update({lvl:{"player":{"point":[x,y]},"platforms":ls}})
 
 def savePoint():
 	point = [pl.x, pl.y]
@@ -186,7 +193,7 @@ def nextLevel():
 			pl.pfIndex = len(platforms) - 1
 		else:
 			platforms.append(Platform([1, 475, 918, 506], sc, 1))
-			pl.x, pl.y = x, 200
+			pl.x, pl.y = x, y
 			pl.pfIndex = 0
 			saveLevel()
 	else:
@@ -206,10 +213,7 @@ for i in data[str(pl.level)]["platforms"]:
 while True:
 	sc.fill((100, 50, 50))
 	events()
-	if pl.hp <= 0:
-		eButton.draw("конец", Width)
-	else:
-		play()
+	play()
 
 	clock.tick(120)
 

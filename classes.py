@@ -20,65 +20,71 @@ class Player:
 		self.width = self.height = 10
 		self.hp = 1
 		self.level = 1
+		self.pause = False
+		self.editing = True
 
-		self.platformUnder = False
-		self.platformAbove = False
 		self.standsOnThePlatform = 0
 		self.pfMotion = 0
 		self.pfIndex = 0
-		self.nextLevel = False
+		self.Sxl = 0
+		self.Sxr = 0
+		self.Sy1 = 0
+		self.Sy2 = 0
+		self.pfType = 0
 
-	def movement(self, s, pfType, s2):
+	def movement(self):
 		if self.motion == p.K_RIGHT:
-			self.x += self.vx
+			if self.Sxr < self.vx:
+				self.x += self.Sxr
+			else:
+				self.x += self.vx
 		elif self.motion == p.K_LEFT:
-			self.x -= self.vx
+			if self.Sxl < self.vx:
+				self.x -= self.Sxl
+			else:
+				self.x -= self.vx
 		if self.x > self.scWidth:
 			self.x = 0
 		elif self.x < 0:
 			self.x = self.scWidth
-
-		print("s =", s)
-		if s == 0:
-			self.standsOnThePlatform = pfType
-		else:
-			self.standsOnThePlatform = 0
-			self.vy += self.g					# притяжение
-
-		if self.platformAbove:
-			if s2 <= 0 and self.vy < 0:
-				self.vy = 0
-			elif s > 0 and s2 < -self.vy:
-				self.vy = -s2
 		
-		if self.platformUnder:
-			if pfType == (1 or 4 or 5):
-				if s < self.vy:
-					self.vy = s
-				if s == 0:
-					if self.jump:
-						self.vy = -self.vyMax
-					else:
-						self.vy = 0
-			elif pfType == 3:
-				if s < self.vy or s == 0:
-					if self.vy > 8:
-						self.vy = -(self.vy * 3 / 4)
-					elif self.vy > 3:
-						self.vy = -(self.vy - 3)
-					else:
-						self.vy = 0
-						self.y += s
-					if self.jump:
-						self.vy -= self.vyMax
-				if s < self.vy and s != 0:
-					self.y += (s * 2 - self.vy)
+		if self.Sy1 != 0:								# притяжение
+			self.standsOnThePlatform = 0
+			self.vy += self.g
+		else:
+			self.standsOnThePlatform = self.pfType
+
+		if self.Sy2 <= 0 and self.vy < 0:
+			self.vy = 0
+		elif self.Sy1 > 0 and self.Sy2 < -self.vy:
+			self.vy = -self.Sy2
+		if self.pfType == 1 or self.pfType > 3:
+			if self.Sy1 < self.vy:
+				self.vy = self.Sy1
+			if self.Sy1 == 0:
+				if self.jump:
+					self.vy = -self.vyMax
+				else:
+					self.vy = 0
+		elif self.pfType == 3:
+			if self.Sy1 < self.vy or self.Sy1 == 0:
+				if self.vy > 8:
+					self.vy = -(self.vy * 3 / 4)
+				elif self.vy > 3:
+					self.vy = -(self.vy - 3)
+				else:
+					self.vy = 0
+					self.y += self.Sy1
+				if self.jump:
+					self.vy -= self.vyMax
+			if self.Sy1 < self.vy and self.Sy1 != 0:
+				self.y += (self.Sy1 * 2 - self.vy)
 					
 		self.y += self.vy
 			
-	def draw(self, s, pfType, s2):
-		self.movement(s, pfType, s2)
-		#print("hp =", self.hp)
+	def draw(self):
+		if not self.pause:
+			self.movement()
 		x = round(self.x)
 		y = round(self.y)
 		form = [(x-self.width, y-self.height), (x-self.width, y+self.height), 
