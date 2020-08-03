@@ -1,5 +1,6 @@
 import pygame as p
-import sys, json
+import sys
+import json
 from classes import *
 
 p.mixer.init()
