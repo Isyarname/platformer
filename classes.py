@@ -27,21 +27,21 @@ class Player:
 		self.standsOnThePlatform = 0
 		self.pfMotion = 0
 		self.pfIndex = 0
-		self.Sxl = 0
-		self.Sxr = 0
-		self.Sy1 = 0
-		self.Sy2 = 0
+		self.sxl = 0
+		self.sxr = 0
+		self.sy1 = 0
+		self.sy2 = 0
 		self.pfType = 0
 
 	def movement(self):
 		if self.motion == p.K_RIGHT:
-			if self.Sxr < self.vx:
-				self.x += self.Sxr
+			if self.sxr < self.vx:
+				self.x += self.sxr
 			else:
 				self.x += self.vx
 		elif self.motion == p.K_LEFT:
-			if self.Sxl < self.vx:
-				self.x -= self.Sxl
+			if self.sxl < self.vx:
+				self.x -= self.sxl
 			else:
 				self.x -= self.vx
 		if self.x > self.scWidth:
@@ -49,37 +49,37 @@ class Player:
 		elif self.x < 0:
 			self.x = self.scWidth
 		
-		if self.Sy1 != 0:								# притяжение
+		if self.sy1 != 0:								# притяжение
 			self.standsOnThePlatform = 0
 			self.vy += self.g
 		else:
 			self.standsOnThePlatform = self.pfType
 
-		if self.Sy2 <= 0 and self.vy < 0:
+		if self.sy2 <= 0 and self.vy < 0:
 			self.vy = 0
-		elif self.Sy1 > 0 and self.Sy2 < -self.vy:
-			self.vy = -self.Sy2
+		elif self.sy1 > 0 and self.sy2 < -self.vy:
+			self.vy = -self.sy2
 		if self.pfType == 1 or self.pfType > 3:
-			if self.Sy1 < self.vy:
-				self.vy = self.Sy1
-			if self.Sy1 == 0:
+			if self.sy1 < self.vy:
+				self.vy = self.sy1
+			if self.sy1 == 0:
 				if self.jump:
 					self.vy = -self.vyMax
 				else:
 					self.vy = 0
 		elif self.pfType == 3:
-			if self.Sy1 < self.vy or self.Sy1 == 0:
+			if self.sy1 < self.vy or self.sy1 == 0:
 				if self.vy > 8:
 					self.vy = -(self.vy * 3 / 4)
 				elif self.vy > 3:
 					self.vy = -(self.vy - 3)
 				else:
 					self.vy = 0
-					self.y += self.Sy1
+					self.y += self.sy1
 				if self.jump:
 					self.vy -= self.vyMax
-			if self.Sy1 < self.vy and self.Sy1 != 0:
-				self.y += (self.Sy1 * 2 - self.vy)
+			if self.sy1 < self.vy and self.sy1 != 0:
+				self.y += (self.sy1 * 2 - self.vy)
 					
 		self.y += self.vy
 			

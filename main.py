@@ -37,20 +37,20 @@ def distanceToPlatform(platform):
 				restart()
 			elif sy1 <= 0 and platform.type == 5:
 				nextLevel(1)
-		if 0 <= sy1 < pl.Sy1:
-			pl.Sy1 = sy1
+		if 0 <= sy1 < pl.sy1:
+			pl.sy1 = sy1
 			pl.pfType = platform.type
 		sy2 = pl.y - pl.height - platform.y2 - 1
-		if 0 <= sy2 < pl.Sy2:
-			pl.Sy2 = sy2
+		if 0 <= sy2 < pl.sy2:
+			pl.sy2 = sy2
 	elif (pl.y - pl.height <= platform.y2 and 
 		pl.y + pl.height >= platform.y1 and platform.type != 4):
 		sxl = pl.x - pl.width - platform.x2 - 1
-		if 0 <= sxl < pl.Sxl:
-			pl.Sxl = sxl
+		if 0 <= sxl < pl.sxl:
+			pl.sxl = sxl
 		sxr = platform.x1 - (pl.x + pl.width) - 1
-		if 0 <= sxr < pl.Sxr:
-			pl.Sxr = sxr
+		if 0 <= sxr < pl.sxr:
+			pl.sxr = sxr
 
 def mouseMotion(event):
 	pos = event.pos
@@ -153,10 +153,10 @@ def events():
 				pl.motion = 0
 
 def play():
-	pl.Sxr = 9999
-	pl.Sxl = 9999
-	pl.Sy1 = 9999
-	pl.Sy2 = 9999
+	pl.sxr = 9999
+	pl.sxl = 9999
+	pl.sy1 = 9999
+	pl.sy2 = 9999
 	pl.pfType = 0
 	for i, platform in enumerate(platforms):
 		if platform.type != 2:
