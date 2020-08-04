@@ -18,10 +18,11 @@ class Player:
 		self.motion = 0
 		self.jump = False
 		self.width = self.height = 10
-		self.hp = 1
+		self.restart = False
 		self.level = 1
-		self.pause = False
+		self.attempt = 1
 		self.editing = True
+		self.levelIsNew = False
 
 		self.standsOnThePlatform = 0
 		self.pfMotion = 0
@@ -83,8 +84,7 @@ class Player:
 		self.y += self.vy
 			
 	def draw(self):
-		if not self.pause:
-			self.movement()
+		self.movement()
 		x = round(self.x)
 		y = round(self.y)
 		form = [(x-self.width, y-self.height), (x-self.width, y+self.height), 
@@ -135,18 +135,25 @@ class Button:
 		self.f = p.font.Font(font, self.size)
 		self.x = x
 		self.y = y
-		self.h = size * 10 // 19 + 7
 		self.w = 10
 
 	def draw(self, txt, Width):
-		text = self.f.render(txt, 1, self.textColor)
-		self.w = len(txt) * self.size // 3 + 10
-		if self.x - self.w < 5:
-			self.x -= (self.x - self.w) - 5
-		elif self.x + self.w > Width - 5:
-			self.x -= (self.x + self.w) - (Width - 5)
-		place = text.get_rect(center=(self.x,self.y))
-		form = [(self.x - self.w, self.y - self.h), (self.x + self.w, self.y - self.h),
-		(self.x + self.w, self.y + self.h), (self.x - self.w, self.y + self.h)]
+		indent = 10
+		x, y = self.x, self.y
+		h = len(txt) * self.size / 2.5
+		w = 0
+		for i in txt:
+			if len(i) > w:
+				w = len(i) * self.size / 2.5
+		fh = round(h + indent)
+		fw = round(w + indent)
+		form = [(x-fw, y-fh), (x+fw, y-fh), (x+fw, y+fh), (x-fw, y+fh)]
 		p.draw.polygon(self.surface, self.color, form)
-		self.surface.blit(text, place)
+		tx = x - w
+		dy = h * 2 / len(txt)
+		for i, line in enumerate(txt):
+			text = self.f.render(line, 1, self.textColor)
+			ty = round(y - h + dy * i)
+			place = text.get_rect(topleft=(tx, ty))
+			self.surface.blit(text, place)
+		

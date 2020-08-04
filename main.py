@@ -13,8 +13,9 @@ sc = p.display.set_mode((Width, Height))
 platforms = []
 
 fileName = "data.json"
-buttonColor = (140, 140, 140)
-eButton = Button(Width//2, Height//2, sc, Width//15, buttonColor)	# конец
+bColor = (118,185,237)
+size = Width//75
+lButton = Button(60,30, sc, size, bColor)				# уровень и попытка
 x = Width // 2
 y = 300
 pl = Player(sc, x, 60, Height, Width)
@@ -31,19 +32,19 @@ def distanceToPlatform(platform):
 	if (pl.x - pl.width <= platform.x2 and 
 		pl.x + pl.width >= platform.x1):
 		sy1 = platform.y1 - (pl.y + pl.height) - 1
-		sy2 = pl.y - pl.height - platform.y2 - 1
 		if pl.y - pl.height <= platform.y2:
 			if sy1 < 9 and platform.type == 4:
-				end()
+				restart()
 			elif sy1 <= 0 and platform.type == 5:
-				nextLevel()
+				nextLevel(1)
 		if 0 <= sy1 < pl.Sy1:
 			pl.Sy1 = sy1
 			pl.pfType = platform.type
+		sy2 = pl.y - pl.height - platform.y2 - 1
 		if 0 <= sy2 < pl.Sy2:
 			pl.Sy2 = sy2
-	if (pl.y - pl.height <= platform.y2 and 
-		pl.y + pl.height >= platform.y1):
+	elif (pl.y - pl.height <= platform.y2 and 
+		pl.y + pl.height >= platform.y1 and platform.type != 4):
 		sxl = pl.x - pl.width - platform.x2 - 1
 		if 0 <= sxl < pl.Sxl:
 			pl.Sxl = sxl
@@ -81,7 +82,7 @@ def editingWithTheKeyboard(event):
 		if platforms[pl.pfIndex].type > 5:
 			platforms[pl.pfIndex].type = 1
 		platforms[pl.pfIndex].colorSel()
-	elif event.key == p.K_d:
+	elif event.key == p.K_x:
 		platforms.pop(pl.pfIndex)
 		pl.pfIndex -= 1
 		pl.pfMotion = 0
@@ -89,18 +90,16 @@ def editingWithTheKeyboard(event):
 		savePoint()
 	elif event.key == p.K_l:
 		saveLevel()
-	elif event.key == p.K_r:
-		restart()
-		if pl.pause:
-			pl.pause = False
 	elif event.key == p.K_n:
-		nextLevel()
+		nextLevel(1)
+	elif event.key == p.K_b:
+		nextLevel(-1)
 	elif event.key == p.K_c:
 		pts = (x-20, y-20, x+20, y+20)
 		platforms.append(Platform(pts, sc))
 
 def events():
-	for event in p.event.get():
+	for event in p.event.get(): 
 		if event.type == p.MOUSEBUTTONDOWN:
 			if pl.editing:
 				pos = event.pos
@@ -128,6 +127,22 @@ def events():
 				pl.motion = event.key
 			elif event.key == p.K_SPACE:
 				pl.jump = True
+			elif event.key == p.K_r:
+				restart()
+			elif event.key == p.K_s:
+				data["progress"] = {"level":pl.level, "point":[pl.x,pl.y], "attempt":pl.attempt}
+				saveLevel()
+			elif event.key == p.K_d:
+				lvl = str(data["progress"]["level"])
+				if lvl in data.keys():
+					pl.level = data["progress"]["level"]
+					point = data["progress"]["point"]
+					attempt = data["progress"]["attempt"]
+					restoreProgress(lvl, point, attempt)
+				else:
+					data["progress"] = {"level":1, "point":[450, 60], "attempt":1}
+			elif event.key == p.K_f:
+				data["progress"] = {"level":1, "point":[450, 60], "attempt":1}
 			elif pl.editing:
 				editingWithTheKeyboard(event)
 
@@ -144,16 +159,12 @@ def play():
 	pl.Sy2 = 9999
 	pl.pfType = 0
 	for i, platform in enumerate(platforms):
-		if platform.type != 2 and not pl.pause:
+		if platform.type != 2:
 			distanceToPlatform(platform)
 		platform.draw()
 	pl.draw()
-	if pl.hp <= 0:
-		eButton.draw("конец", Width)
-
-def end():
-	pl.hp = 0
-	pl.pause = True
+	text = ["level: "+str(pl.level), "attempt: "+str(pl.attempt)]
+	lButton.draw(text, Width)
 
 def saveLevel(ls=[]):
 	lvl = str(pl.level)
@@ -174,38 +185,50 @@ def savePoint():
 		data.update({lvl:{"player":{"point":point},"platforms":[]}})
 
 def restart():
+	pl.attempt += 1
 	lvl = str(pl.level)
 	point = data[lvl]["player"]["point"]
 	pl.x, pl.y = point
+	pl.restart = False
 	pl.vy = 0
-	pl.hp += 1
 
-def nextLevel():
-	if pl.level < 5:
-		pl.level += 1
+def nextLevel(transition):
+	if pl.level < 10:
+		if pl.levelIsNew:
+			saveLevel()
+		pl.level += transition
 		lvl = str(pl.level)
-		platforms.clear()
-		pl.vy = 0
 		if lvl in data.keys():
 			point = data[lvl]["player"]["point"]
-			pl.x, pl.y = point
-			for i in data[lvl]["platforms"]:
-				platforms.append(Platform(i["points"], sc, i["type"]))
-			pl.pfIndex = len(platforms) - 1
+			restoreProgress(lvl, point, 1)
 		else:
-			platforms.append(Platform([1, 475, 918, 506], sc, 1))
-			pl.x, pl.y = x, y
-			pl.pfIndex = 0
-			saveLevel()
+			newLevel()
 	else:
 		print("капец, куда тебе столько уровней?")
+
+def restoreProgress(lvl, point, attempt):
+	pl.attempt = attempt
+	pl.vy = 0
+	pl.x, pl.y = point
+	platforms.clear()
+	for i in data[lvl]["platforms"]:
+		platforms.append(Platform(i["points"], sc, i["type"]))
+	pl.pfIndex = len(platforms) - 1
+
+def newLevel():
+	pl.attempt = 1
+	pl.vy = 0
+	pl.x, pl.y = x, y
+	platforms.clear()
+	platforms.append(Platform([1, 475, 918, 506], sc, 1))
+	pl.pfIndex = 0
+	pl.levelIsNew = True
 
 def _quit():
 	saveLevel()
 	write()
 	p.quit()
 	sys.exit()
-
 
 data = read()
 for i in data[str(pl.level)]["platforms"]:
@@ -218,6 +241,6 @@ while True:
 
 	clock.tick(120)
 
-	p.display.set_caption("level = "+str(pl.level))
+	p.display.set_caption("Platformer")
 	p.display.update()
 	p.display.flip()
