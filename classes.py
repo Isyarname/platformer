@@ -2,6 +2,7 @@ import pygame as p
 
 font = "pixelFont.otf"
 textColor = (0,0,0)
+pfColors = [(253,150,34), (165,165,100), (255,50,0), (40,41,35), (69,180,0)]
 
 class Player:
 	def __init__(self, surf, x, y, height, width):
@@ -13,7 +14,7 @@ class Player:
 		self.scWidth = width
 		self.surface = surf
 		self.color = (30, 100, 200)
-		self.g = 0.5							# 0.5
+		self.g = 0.5
 		self.vyMax = self.g * 16
 		self.motion = 0
 		self.jump = False
@@ -22,9 +23,7 @@ class Player:
 		self.level = 1
 		self.attempt = 1
 		self.editing = True
-		self.levelIsNew = False
 
-		self.standsOnThePlatform = 0
 		self.pfMotion = 0
 		self.pfIndex = 0
 		self.sxl = 0
@@ -32,6 +31,7 @@ class Player:
 		self.sy1 = 0
 		self.sy2 = 0
 		self.pfType = 0
+		self.backgroundColor = (100, 50, 50)
 
 	def movement(self):
 		if self.motion == p.K_RIGHT:
@@ -50,10 +50,7 @@ class Player:
 			self.x = self.scWidth
 		
 		if self.sy1 != 0:								# притяжение
-			self.standsOnThePlatform = 0
 			self.vy += self.g
-		else:
-			self.standsOnThePlatform = self.pfType
 
 		if self.sy2 <= 0 and self.vy < 0:
 			self.vy = 0
@@ -82,6 +79,9 @@ class Player:
 				self.y += (self.sy1 * 2 - self.vy)
 					
 		self.y += self.vy
+
+	def getPoints(self):
+		return (self.x - self.width, self.y - self.height, self.x + self.width, self.y + self.height)
 			
 	def draw(self):
 		self.movement()
@@ -93,23 +93,24 @@ class Player:
 
 
 class Platform:
-	def __init__(self, points, surface, _type=3):
+	def __init__(self, points, surface, _type=3, colors=pfColors):
 		self.x1, self.y1, self.x2, self.y2 = points
 		self.surface = surface
 		self.type = _type
+		self.colors = colors
 		self.colorSel()
 
 	def colorSel(self):
 		if self.type == 1:				# solid
-			self.color = (253,150,34)
+			self.color = self.colors[0]
 		elif self.type == 2:			# ghost
-			self.color = (165,165,100)
+			self.color = self.colors[1]
 		elif self.type == 3:			# trampoline
-			self.color = (255,50,0)
+			self.color = self.colors[2]
 		elif self.type == 4:			# spikes
-			self.color = (40,41,35)
+			self.color = self.colors[3]
 		elif self.type == 5:			# passage
-			self.color = (69,180,0)
+			self.color = self.colors[4]
 
 	def getPoints(self):
 		return (self.x1, self.y1, self.x2, self.y2)
