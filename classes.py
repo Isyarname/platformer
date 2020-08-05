@@ -49,7 +49,7 @@ class Player:
 		elif self.x < 0:
 			self.x = self.scWidth
 		
-		if self.sy1 != 0:								# притяжение
+		if self.sy1 != 0:								# gravitation
 			self.vy += self.g
 
 		if self.sy2 <= 0 and self.vy < 0:

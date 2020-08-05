@@ -15,7 +15,7 @@ platforms = []
 fileName = "data.json"
 buttonColor = (118,185,237)
 size = Width//75
-lButton = Button(60,30, sc, size, buttonColor)				# уровень и попытка
+lButton = Button(60,30, sc, size, buttonColor)
 x = Width // 2
 y = Height * 3 // 5
 pl = Player(sc, x, 60, Height, Width)
@@ -55,7 +55,7 @@ def distanceToPlatform(platform):
 def mouseMotion(event):
 	pos = event.pos
 	x1, y1, x2, y2 = platforms[pl.pfIndex].getPoints()
-	if pl.pfMotion == 1:								# измененте платформы
+	if pl.pfMotion == 1:								# platform editing
 		if pos[0]-x1 < x2-pos[0]:
 			platforms[pl.pfIndex].x1 += event.rel[0]
 		else:
@@ -64,7 +64,7 @@ def mouseMotion(event):
 			platforms[pl.pfIndex].y1 += event.rel[1]
 		else:
 			platforms[pl.pfIndex].y2 += event.rel[1]
-	elif pl.pfMotion == 2:								# передвижение платформы
+	elif pl.pfMotion == 2:								# platform movement
 		platforms[pl.pfIndex].x1 += event.rel[0]
 		platforms[pl.pfIndex].y1 += event.rel[1]
 		platforms[pl.pfIndex].x2 += event.rel[0]
