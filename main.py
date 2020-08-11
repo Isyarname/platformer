@@ -14,7 +14,7 @@ platforms = []
 
 fileName = "data.json"
 buttonColor = (118,185,237)
-size = Width//75
+size = Width // 75
 lButton = Button(60,30, sc, size, buttonColor)
 x = Width // 2
 y = Height * 3 // 5
@@ -32,6 +32,7 @@ def distanceToPlatform(platform):
 	if (pl.x - pl.width <= platform.x2 and 
 		pl.x + pl.width >= platform.x1):
 		sy1 = platform.y1 - (pl.y + pl.height) - 1
+		sy2 = pl.y - pl.height - platform.y2 - 1
 		if pl.y - pl.height <= platform.y2:
 			if sy1 < 9 and platform.type == 4:
 				restart()
@@ -40,8 +41,7 @@ def distanceToPlatform(platform):
 		if 0 <= sy1 < pl.sy1:
 			pl.sy1 = sy1
 			pl.pfType = platform.type
-		sy2 = pl.y - pl.height - platform.y2 - 1
-		if 0 <= sy2 < pl.sy2:
+		elif 0 <= sy2 < pl.sy2:
 			pl.sy2 = sy2
 	elif (pl.y - pl.height <= platform.y2 and 
 		pl.y + pl.height >= platform.y1 and platform.type != 4):
@@ -69,6 +69,7 @@ def mouseMotion(event):
 		platforms[pl.pfIndex].y1 += event.rel[1]
 		platforms[pl.pfIndex].x2 += event.rel[0]
 		platforms[pl.pfIndex].y2 += event.rel[1]
+	platforms[pl.pfIndex].formUpdate()
 
 def editingWithTheKeyboard(event):
 	print(platforms[pl.pfIndex].getPoints())
@@ -95,28 +96,31 @@ def editingWithTheKeyboard(event):
 	elif event.key == p.K_y:
 		platforms[pl.pfIndex].y1 -= 1
 		platforms[pl.pfIndex].y2 -= 1
+		platforms[pl.pfIndex].formUpdate()
 	elif event.key == p.K_h:
 		platforms[pl.pfIndex].y1 += 1
 		platforms[pl.pfIndex].y2 += 1
+		platforms[pl.pfIndex].formUpdate()
 	elif event.key == p.K_g:
 		platforms[pl.pfIndex].x1 -= 1
 		platforms[pl.pfIndex].x2 -= 1
+		platforms[pl.pfIndex].formUpdate()
 	elif event.key == p.K_j:
 		platforms[pl.pfIndex].x1 += 1
 		platforms[pl.pfIndex].x2 += 1
+		platforms[pl.pfIndex].formUpdate()
 
 def events():
 	for event in p.event.get(): 
-		if event.type == p.MOUSEBUTTONDOWN:
-			if pl.editing:
-				pos = event.pos
-				for i, o in enumerate(platforms):
-					if (o.x1 <= pos[0] <= o.x2 and o.y1 <= pos[1] <= o.y2):
-						pl.pfIndex = i
-						if event.button == 1:
-							pl.pfMotion = 1
-						elif event.button == 3:
-							pl.pfMotion = 2
+		if event.type == p.MOUSEBUTTONDOWN and pl.editing:
+			pos = event.pos
+			for i, o in enumerate(platforms):
+				if (o.x1 <= pos[0] <= o.x2 and o.y1 <= pos[1] <= o.y2):
+					pl.pfIndex = i
+					if event.button == 1:
+						pl.pfMotion = 1
+					elif event.button == 3:
+						pl.pfMotion = 2
 
 		elif event.type == p.MOUSEBUTTONUP:
 			pl.pfMotion = 0
@@ -124,7 +128,7 @@ def events():
 		elif event.type == p.MOUSEMOTION and pl.editing:
 			mouseMotion(event)
 
-		if event.type == p.QUIT:
+		elif event.type == p.QUIT:
 			_quit()
 
 		elif event.type == p.KEYDOWN:
@@ -174,7 +178,7 @@ def play():
 	lvl = str(pl.level)
 	text = ["level: "+lvl, "attempt: "+str(pl.attempt)]
 	lButton.draw(text, Width)
-	levels(lvl)
+	la(lvl)
 
 def saveLevel():
 	lvl = str(pl.level)
@@ -203,7 +207,6 @@ def restart():
 		pl.attempt += 1
 	else:
 		restoreProgress(lvl, point, pl.attempt+1)
-	pl.restart = False
 
 def nextLevel(transition):
 	if (pl.level < 10 and transition > 0) or (transition < 0 and pl.level > 1):
@@ -214,6 +217,7 @@ def nextLevel(transition):
 			restoreProgress(lvl, point, 1)
 		else:
 			newLevel()
+		ld(lvl)
 	else:
 		print("капец, куда тебе столько уровней?")
 
@@ -233,7 +237,7 @@ def restoreProgress(lvl: str, point: list, attempt: int):
 	try:
 		pl.backgroundColor = data[lvl]["background color"]
 	except:
-		pl.backgroundColor = (100, 50, 50)
+		pl.backgroundColor = (62,62,62)
 
 def newLevel():
 	pl.attempt = 1
@@ -249,11 +253,23 @@ def _quit():
 	p.quit()
 	sys.exit()
 
-def levels(lvl: str):
-	if pl.level == 4 and not pl.jump:
+def la(lvl: str):
+	if pl.level == 4 and not pl.jump and (pl.motion != 0 or pl.vy != 0):
 		pfColors = data[lvl]["pfColors"]
 		points = pl.getPoints()
 		platforms.append(Platform(points, sc, 1, pfColors))
+
+def ld(lvl: str):
+	if pl.level == 5:
+		lButton.x = 200
+		lButton.y = 100
+		lButton.color = (69,180,0)
+	elif pl.level != 5:
+		lButton.x = 60
+		lButton.y = 30
+		lButton.color = buttonColor
+	if pl.level == 6:
+		pl.attempt = 0
 
 data = read()
 for i in data[str(pl.level)]["platforms"]:

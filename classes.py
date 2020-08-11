@@ -8,7 +8,7 @@ class Player:
 	def __init__(self, surf, x, y, height, width):
 		self.x = x
 		self.y = y
-		self.vx = 4
+		self.vx = 3
 		self.vy = 0
 		self.scHeight = height
 		self.scWidth = width
@@ -18,8 +18,8 @@ class Player:
 		self.vyMax = self.g * 16
 		self.motion = 0
 		self.jump = False
-		self.width = self.height = 10
-		self.restart = False
+		self.width = 10
+		self.height = 10
 		self.level = 1
 		self.attempt = 1
 		self.editing = True
@@ -31,7 +31,7 @@ class Player:
 		self.sy1 = 0
 		self.sy2 = 0
 		self.pfType = 0
-		self.backgroundColor = (100, 50, 50)
+		self.backgroundColor = (62,62,62)
 
 	def movement(self):
 		if self.motion == p.K_RIGHT:
@@ -64,12 +64,10 @@ class Player:
 					self.vy = -self.vyMax
 				else:
 					self.vy = 0
-		elif self.pfType == 3:
+		elif self.pfType == 3:							#trampoline
 			if self.sy1 < self.vy or self.sy1 == 0:
-				if self.vy > 8:
-					self.vy = -(self.vy * 3 / 4)
-				elif self.vy > 3:
-					self.vy = -(self.vy - 3)
+				if self.vy > 1.5:
+					self.vy = -self.vy * 0.8 + 1
 				else:
 					self.vy = 0
 					self.y += self.sy1
@@ -81,7 +79,8 @@ class Player:
 		self.y += self.vy
 
 	def getPoints(self):
-		return (self.x - self.width, self.y - self.height, self.x + self.width, self.y + self.height)
+		return (self.x - self.width, self.y - self.height, 
+			self.x + self.width, self.y + self.height)
 			
 	def draw(self):
 		self.movement()
@@ -99,6 +98,8 @@ class Platform:
 		self.type = _type
 		self.colors = colors
 		self.colorSel()
+		self.form = [(self.x1, self.y1), (self.x1, self.y2),
+		(self.x2, self.y2), (self.x2, self.y1)]
 
 	def colorSel(self):
 		if self.type == 1:				# solid
@@ -115,10 +116,12 @@ class Platform:
 	def getPoints(self):
 		return (self.x1, self.y1, self.x2, self.y2)
 
-	def draw(self):
-		form = [(self.x1, self.y1), (self.x1, self.y2),
+	def formUpdate(self):
+		self.form = [(self.x1, self.y1), (self.x1, self.y2),
 		(self.x2, self.y2), (self.x2, self.y1)]
-		p.draw.polygon(self.surface, self.color, form)
+
+	def draw(self):
+		p.draw.polygon(self.surface, self.color, self.form)
 		if self.type == 4:		# spikes
 			w, h = 4, 9
 			for x in range(self.x1+w, self.x2, w*2):
@@ -136,11 +139,9 @@ class Button:
 		self.f = p.font.Font(font, self.size)
 		self.x = x
 		self.y = y
-		self.w = 10
 
 	def draw(self, txt, Width):
 		indent = 10
-		x, y = self.x, self.y
 		h = len(txt) * self.size / 2.5
 		w = 0
 		for i in txt:
@@ -148,13 +149,14 @@ class Button:
 				w = len(i) * self.size / 2.5
 		fh = round(h + indent)
 		fw = round(w + indent)
-		form = [(x-fw, y-fh), (x+fw, y-fh), (x+fw, y+fh), (x-fw, y+fh)]
+		form = [(self.x-fw, self.y-fh), (self.x+fw, self.y-fh), 
+		(self.x+fw, self.y+fh), (self.x-fw, self.y+fh)]
 		p.draw.polygon(self.surface, self.color, form)
-		tx = x - w
+		tx = self.x - w
 		dy = h * 2 / len(txt)
 		for i, line in enumerate(txt):
 			text = self.f.render(line, 1, self.textColor)
-			ty = round(y - h + dy * i)
+			ty = round(self.y - h + dy * i)
 			place = text.get_rect(topleft=(tx, ty))
 			self.surface.blit(text, place)
 		
