@@ -1,8 +1,6 @@
 import pygame as p
 
 font = "pixelFont.otf"
-textColor = (0,0,0)
-pfColors = [(253,150,34), (165,165,100), (255,50,0), (40,41,35), (69,180,0)]
 
 class Player:
 	def __init__(self, surf, x, y, height, width):
@@ -32,6 +30,7 @@ class Player:
 		self.sy2 = 0
 		self.pfType = 0
 		self.backgroundColor = (62,62,62)
+		self.pfColors = [(253,150,34), (165,165,100), (255,50,0), (40,41,35), (69,180,0)]
 
 	def movement(self):
 		if self.motion == p.K_RIGHT:
@@ -90,9 +89,8 @@ class Player:
 		(x+self.width, y+self.height), (x+self.width, y-self.height)]
 		p.draw.polygon(self.surface, self.color, form)
 
-
 class Platform:
-	def __init__(self, points, surface, _type=3, colors=pfColors):
+	def __init__(self, points, surface, _type, colors):
 		self.x1, self.y1, self.x2, self.y2 = points
 		self.surface = surface
 		self.type = _type
@@ -127,33 +125,29 @@ class Platform:
 			for x in range(self.x1+w, self.x2, w*2):
 				form = [(x-w, self.y1), (x, self.y1-h), (x+w, self.y1)]
 				p.draw.polygon(self.surface, self.color, form)
-	
 
-class Button:
+class Table:
 	def __init__(self, x, y, surf, size, color):
 		self.pressure = False
 		self.surface = surf
 		self.color = color
-		self.textColor = textColor
+		self.textColor = (0,0,0)
 		self.size = size
 		self.f = p.font.Font(font, self.size)
 		self.x = x
 		self.y = y
 
-	def draw(self, txt, Width):
-		indent = 10
-		h = len(txt) * self.size / 2.5
-		w = 0
-		for i in txt:
-			if len(i) > w:
-				w = len(i) * self.size / 2.5
+	def draw(self, txt, height, lenght):
+		h = height * self.size / 2
+		w = lenght * self.size / 3
+		indent = 8
 		fh = round(h + indent)
 		fw = round(w + indent)
 		form = [(self.x-fw, self.y-fh), (self.x+fw, self.y-fh), 
 		(self.x+fw, self.y+fh), (self.x-fw, self.y+fh)]
 		p.draw.polygon(self.surface, self.color, form)
 		tx = self.x - w
-		dy = h * 2 / len(txt)
+		dy = h * 2 / height
 		for i, line in enumerate(txt):
 			text = self.f.render(line, 1, self.textColor)
 			ty = round(self.y - h + dy * i)
