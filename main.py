@@ -145,12 +145,12 @@ def events():
 				saveLevel()
 			elif event.key == p.K_d:
 				lvl = str(data["progress"]["level"])
-				if lvl in data.keys():
+				try:
 					pl.level = data["progress"]["level"]
 					point = data["progress"]["point"]
 					attempt = data["progress"]["attempt"]
 					restoreProgress(lvl, point, attempt)
-				else:
+				except Exception:
 					data["progress"] = {"level":1, "point":[450, 60], "attempt":1}
 			elif event.key == p.K_f:
 				data["progress"] = {"level":1, "point":[450, 60], "attempt":1}
@@ -185,17 +185,17 @@ def saveLevel():
 	ls = []
 	for i in platforms:
 		ls.append({"points":i.getPoints(), "type":i.type})
-	if lvl in data.keys():
+	try:
 		data[lvl]["platforms"] = ls
-	else:
+	except Exception:
 		data.update({lvl:{"player":{"point":[x,y]},"platforms":ls}})
 
 def savePoint():
 	point = [pl.x, pl.y]
 	lvl = str(pl.level)
-	if lvl in data.keys():
+	try:
 		data[lvl]["player"]["point"] = point
-	else:
+	except Exception:
 		data.update({lvl:{"player":{"point":point},"platforms":[]}})
 
 def restart():
@@ -212,10 +212,10 @@ def nextLevel(transition):
 	if (pl.level < 10 and transition > 0) or (transition < 0 and pl.level > 1):
 		pl.level += transition
 		lvl = str(pl.level)
-		if lvl in data.keys():
+		try:
 			point = data[lvl]["player"]["point"]
 			restoreProgress(lvl, point, 1)
-		else:
+		except Exception:
 			newLevel()
 		ld(lvl)
 	else:
@@ -228,7 +228,7 @@ def restoreProgress(lvl: str, point: list, attempt: int):
 	platforms.clear()
 	try:
 		pfColors = data[lvl]["pfColors"]
-	except:
+	except Exception:
 		pfColors = [(253,150,34), (165,165,100), (255,50,0), (40,41,35), (69,180,0)]
 	for i in data[lvl]["platforms"]:
 		platforms.append(Platform(i["points"], sc, i["type"], pfColors))
@@ -236,7 +236,7 @@ def restoreProgress(lvl: str, point: list, attempt: int):
 	pl.pfIndex = len(platforms) - 1
 	try:
 		pl.backgroundColor = data[lvl]["background color"]
-	except:
+	except Exception:
 		pl.backgroundColor = (62,62,62)
 
 def newLevel():
