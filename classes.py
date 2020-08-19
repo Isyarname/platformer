@@ -90,26 +90,13 @@ class Player:
 		p.draw.polygon(self.surface, self.color, form)
 
 class Platform:
-	def __init__(self, points, surface, _type, colors):
+	def __init__(self, points, surface, _type, color):
 		self.x1, self.y1, self.x2, self.y2 = points
 		self.surface = surface
 		self.type = _type
-		self.colors = colors
-		self.colorSel()
+		self.color = color
 		self.form = [(self.x1, self.y1), (self.x1, self.y2),
 		(self.x2, self.y2), (self.x2, self.y1)]
-
-	def colorSel(self):
-		if self.type == 1:				# solid
-			self.color = self.colors[0]
-		elif self.type == 2:			# ghost
-			self.color = self.colors[1]
-		elif self.type == 3:			# trampoline
-			self.color = self.colors[2]
-		elif self.type == 4:			# spikes
-			self.color = self.colors[3]
-		elif self.type == 5:			# passage
-			self.color = self.colors[4]
 
 	def getPoints(self):
 		return (self.x1, self.y1, self.x2, self.y2)

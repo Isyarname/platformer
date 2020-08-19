@@ -74,10 +74,12 @@ def mouseMotion(event: p.event.Event):
 def editingWithTheKeyboard(event: p.event.Event):
 	print(platforms[pl.pfIndex].getPoints())
 	if event.key == p.K_t:
-		platforms[pl.pfIndex].type += 1
-		if platforms[pl.pfIndex].type > 5:
-			platforms[pl.pfIndex].type = 1
-		platforms[pl.pfIndex].colorSel()
+		tp = platforms[pl.pfIndex].type
+		tp += 1
+		if tp > 5:
+			tp = 1
+		platforms[pl.pfIndex].type = tp
+		platforms[pl.pfIndex].color = pl.pfColors[tp-1]
 	elif event.key == p.K_x:
 		platforms.pop(pl.pfIndex)
 		pl.pfIndex -= 1
@@ -92,7 +94,8 @@ def editingWithTheKeyboard(event: p.event.Event):
 		nextLevel(-1)
 	elif event.key == p.K_c:
 		pts = (x-20, y-20, x+20, y+20)
-		platforms.append(Platform(pts, sc, 3, pl.pfColors))
+		color = pl.pfColors[2]
+		platforms.append(Platform(pts, sc, 3, color))
 	elif event.key == p.K_y:
 		platforms[pl.pfIndex].y1 -= 1
 		platforms[pl.pfIndex].y2 -= 1
@@ -230,7 +233,9 @@ def restoreProgress(lvl: str, point: list):
 	pl.x, pl.y = point
 	platforms.clear()
 	for i in data[lvl]["platforms"]:
-		platforms.append(Platform(i["points"], sc, i["type"], pl.pfColors))
+		tp = i["type"]
+		color = pl.pfColors[tp-1]
+		platforms.append(Platform(i["points"], sc, tp, color))
 	pl.pfIndex = len(platforms) - 1
 
 def newLevel():
@@ -238,14 +243,15 @@ def newLevel():
 	pl.vy = 0
 	pl.x, pl.y = x, y
 	platforms.clear()
-	platforms.append(Platform([1, 475, 918, 506], sc, 1, pl.pfColors))
+	platforms.append(Platform([1, 475, 918, 506], sc, 1, pl.pfColors[0]))
 	pl.pfIndex = 0
 	saveLevel()
 
 def la(lvl: str):
-	if pl.level == 4 and not pl.jump and (pl.motion != 0 or pl.vy != 0):
-		points = pl.getPoints()
-		platforms.append(Platform(points, sc, 1, pl.pfColors))
+	if pl.level == 4:
+		if not pl.jump and (pl.motion != 0 or pl.vy != 0):
+			points = pl.getPoints()
+			platforms.append(Platform(points, sc, 1, pl.pfColors[0]))
 
 def ld(lvl: str):
 	if pl.level == 4:
@@ -282,7 +288,9 @@ def _quit():
 data = read()
 for i in data[str(pl.level)]["platforms"]:
 	points = i["points"]
-	platforms.append(Platform(points, sc, i["type"], pl.pfColors))
+	tp = i["type"]
+	color = pl.pfColors[tp-1]
+	platforms.append(Platform(points, sc, tp, color))
 
 while True:
 	sc.fill(pl.backgroundColor)
